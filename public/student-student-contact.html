@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student-Student Contact Parameter Details</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #f5f7fa;
+      color: #1e293b;
+      line-height: 1.6;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      background: #1e3a8a;
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .content-card {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .content-card h2 {
+      color: #1e293b;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .content-card h3 {
+      color: #475569;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .content-card p {
+      margin-bottom: 15px;
+      color: #475569;
+    }
+    .content-card ul, .content-card ol {
+      margin-left: 20px;
+      margin-bottom: 15px;
+      color: #475569;
+    }
+    .content-card li {
+      margin-bottom: 8px;
+    }
+    .highlight-box {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .parameter-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .parameter-table th,
+    .parameter-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .parameter-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .parameter-table td {
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Student-Student Contact Parameter</h1>
+    <p>Detailed Information and Guidelines</p>
+  </div>
+  <div class="container">
+    <a href="/" class="back-link">← Back to Dashboard</a>
+    
+    <div class="content-card">
+      <h2>Overview</h2>
+      <p>
+        The Student-Student Contact parameter controls the reduction in contact rate between students 
+        within the school environment. This intervention is designed to limit the spread of infectious 
+        diseases by reducing the frequency and intensity of interactions among students during school hours.
+      </p>
+      <p>
+        This parameter is a critical component of social distancing strategies and can significantly 
+        impact disease transmission dynamics in educational settings.
+      </p>
+    </div>
+
+    <div class="content-card">
+      <h2>Parameter Settings</h2>
+      <p>The parameter can be adjusted to three intensity levels:</p>
+      <table class="parameter-table">
+        <thead>
+          <tr>
+            <th>Intensity Level</th>
+            <th>Description</th>
+            <th>Contact Reduction</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Low</strong></td>
+            <td>Minimal intervention with basic spacing measures</td>
+            <td>10-20% reduction</td>
+          </tr>
+          <tr>
+            <td><strong>Medium</strong></td>
+            <td>Moderate social distancing with organized activities</td>
+            <td>30-50% reduction</td>
+          </tr>
+          <tr>
+            <td><strong>High</strong></td>
+            <td>Strict distancing with limited group interactions</td>
+            <td>60-80% reduction</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="content-card">
+      <h2>Implementation Strategies</h2>
+      <h3>Low Intensity</h3>
+      <ul>
+        <li>Encourage spacing in common areas (hallways, cafeterias)</li>
+        <li>Limit large group gatherings</li>
+        <li>Maintain normal classroom configurations with awareness</li>
+      </ul>
+
+      <h3>Medium Intensity</h3>
+      <ul>
+        <li>Implement staggered schedules for breaks and lunch</li>
+        <li>Reduce class sizes where possible</li>
+        <li>Organize one-way traffic flows in hallways</li>
+        <li>Limit extracurricular activities and group projects</li>
+      </ul>
+
+      <h3>High Intensity</h3>
+      <ul>
+        <li>Implement strict cohort systems (pods) to minimize cross-contact</li>
+        <li>Significantly reduce class sizes or implement hybrid learning</li>
+        <li>Eliminate or severely restrict shared spaces and activities</li>
+        <li>Enforce physical distancing requirements (6+ feet)</li>
+        <li>Minimize transitions between classrooms</li>
+      </ul>
+    </div>
+
+    <div class="content-card">
+      <h2>Impact on Disease Transmission</h2>
+      <p>
+        Reducing student-to-student contact directly impacts the basic reproduction number (R₀) 
+        of infectious diseases. Studies have shown that:
+      </p>
+      <ul>
+        <li><strong>Low intensity</strong> interventions can reduce transmission by 15-25%</li>
+        <li><strong>Medium intensity</strong> interventions can reduce transmission by 30-45%</li>
+        <li><strong>High intensity</strong> interventions can reduce transmission by 50-70%</li>
+      </ul>
+      <div class="highlight-box">
+        <strong>Note:</strong> The effectiveness varies by disease type, with respiratory viruses 
+        (COVID-19, influenza, RSV) showing the most significant response to contact reduction measures.
+      </div>
+    </div>
+
+    <div class="content-card">
+      <h2>Considerations and Trade-offs</h2>
+      <h3>Educational Impact</h3>
+      <p>
+        Higher intensity interventions may affect the quality of education and social development. 
+        Collaborative learning, peer interactions, and group activities are important for student 
+        development but may need to be modified or reduced.
+      </p>
+
+      <h3>Feasibility</h3>
+      <p>
+        Implementation feasibility depends on school infrastructure, available space, staffing 
+        resources, and student population size. Some schools may face physical constraints that 
+        limit the ability to implement high-intensity measures.
+      </p>
+
+      <h3>Compliance</h3>
+      <p>
+        Student and staff compliance is crucial for effectiveness. Clear communication, consistent 
+        enforcement, and age-appropriate strategies are essential for maintaining intervention 
+        effectiveness over time.
+      </p>
+    </div>
+
+    <div class="content-card">
+      <h2>Monitoring and Evaluation</h2>
+      <p>
+        When implementing contact reduction measures, it's important to monitor:
+      </p>
+      <ul>
+        <li>Actual contact rates through observational studies or contact tracing</li>
+        <li>Disease incidence trends in the school population</li>
+        <li>Compliance rates and adherence to protocols</li>
+        <li>Educational outcomes and student well-being</li>
+        <li>Operational challenges and resource requirements</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

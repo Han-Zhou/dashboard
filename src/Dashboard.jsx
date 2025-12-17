@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import {
   LineChart,
   Line,
@@ -12,53 +12,132 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
-  ErrorBar
+  ResponsiveContainer
 } from 'recharts'
 import Papa from 'papaparse'
 
-const scenarioConfig = {
-  base: {
-    label: 'Baseline (No Additional Mitigations)',
-    shortLabel: 'Baseline',
-    badge: 'Base',
-    color: '#0ea5e9',
-    dynamicsPath: '/data/dynamics_df_base.csv',
-    weeklyHospPath: '/data/weekly_hosp_df_base.csv'
-  },
-  testing: {
-    label: 'Testing 10% of Students Daily',
-    shortLabel: 'Testing 10%',
-    badge: 'Test',
-    color: '#f97316',
-    dynamicsPath: '/data/dynamics_df_test_10.csv',
-    weeklyHospPath: '/data/weekly_hosp_df_test_10.csv'
-  },
-  vaccination: {
-    label: 'Vaccination 10% of Students',
-    shortLabel: 'Vaccination 10%',
-    badge: 'Vax',
-    color: '#10b981',
-    dynamicsPath: '/data/dynamics_df_vax_10.csv',
-    weeklyHospPath: '/data/weekly_hosp_df_vax_10.csv'
-  },
-  combo: {
-    label: 'Vaccination + Testing (10%)',
-    shortLabel: 'Vax + Test',
-    badge: 'Combo',
-    color: '#6366f1',
-    dynamicsPath: '/data/dynamics_df_vax_10_test_10.csv',
-    weeklyHospPath: '/data/weekly_hosp_df_vax_10_test_10.csv'
+// CSV filename to intervention parameters mapping
+// Maps CSV filenames to their corresponding intervention parameters:
+// - dynamics_df_base.csv -> Baseline (No Additional Mitigations)
+// - dynamics_df_contact_10.csv -> Contact Reduction 10%
+// - dynamics_df_contact_20.csv -> Contact Reduction 20%
+// - dynamics_df_contact_30.csv -> Contact Reduction 30%
+// - dynamics_df_test_covid_1.csv -> COVID-19 Testing 1%
+// - dynamics_df_test_covid_5.csv -> COVID-19 Testing 5%
+// - dynamics_df_test_covid_10.csv -> COVID-19 Testing 10%
+// - dynamics_df_test_flu_1.csv -> Influenza Testing 1%
+// - dynamics_df_test_flu_5.csv -> Influenza Testing 5%
+// - dynamics_df_test_flu_10.csv -> Influenza Testing 10%
+const parseCsvFilename = (filename) => {
+  // Remove .csv extension and path
+  const name = filename.replace(/\.csv$/, '').replace(/^.*\//, '')
+  
+  // Parse baseline
+  if (name === 'dynamics_df_base') {
+    return {
+      type: 'baseline',
+      label: 'Baseline (No Additional Mitigations)',
+      shortLabel: 'Baseline',
+      badge: 'Base',
+      color: '#0ea5e9',
+      contactReduction: null,
+      testing: { disease: null, percentage: null },
+      vaccination: null
+    }
+  }
+  
+  // Parse contact reduction: dynamics_df_contact_10, dynamics_df_contact_20, dynamics_df_contact_30
+  const contactMatch = name.match(/dynamics_df_contact_(\d+)/)
+  if (contactMatch) {
+    const percentage = parseInt(contactMatch[1])
+    return {
+      type: 'contact',
+      label: `Contact Reduction ${percentage}%`,
+      shortLabel: `Contact ${percentage}%`,
+      badge: `Contact ${percentage}%`,
+      color: '#8b5cf6',
+      contactReduction: percentage,
+      testing: { disease: null, percentage: null },
+      vaccination: null
+    }
+  }
+  
+  // Parse testing: dynamics_df_test_covid_1, dynamics_df_test_covid_5, dynamics_df_test_covid_10
+  // or dynamics_df_test_flu_1, dynamics_df_test_flu_5, dynamics_df_test_flu_10
+  const testMatch = name.match(/dynamics_df_test_(covid|flu)_(\d+)/)
+  if (testMatch) {
+    const disease = testMatch[1]
+    const percentage = parseInt(testMatch[2])
+    return {
+      type: 'testing',
+      label: `${disease === 'covid' ? 'COVID-19' : 'Influenza'} Testing ${percentage}%`,
+      shortLabel: `${disease === 'covid' ? 'COVID' : 'Flu'} Test ${percentage}%`,
+      badge: `Test ${disease === 'covid' ? 'COVID' : 'Flu'} ${percentage}%`,
+      color: '#f97316',
+      contactReduction: null,
+      testing: { disease, percentage },
+      vaccination: null
+    }
+  }
+  
+  // Default fallback
+  return {
+    type: 'unknown',
+    label: filename,
+    shortLabel: filename,
+    badge: 'Unknown',
+    color: '#64748b',
+    contactReduction: null,
+    testing: { disease: null, percentage: null },
+    vaccination: null
   }
 }
 
-const scenarioOptions = [
-  { id: 'base', label: scenarioConfig.base.label },
-  { id: 'testing', label: scenarioConfig.testing.label },
-  { id: 'vaccination', label: scenarioConfig.vaccination.label },
-  { id: 'combo', label: scenarioConfig.combo.label },
-  { id: 'compare', label: 'Compare Testing vs Vaccination' }
+// Available CSV files and their configurations
+const availableCsvFiles = [
+  'dynamics_df_base.csv',
+  'dynamics_df_contact_10.csv',
+  'dynamics_df_contact_20.csv',
+  'dynamics_df_contact_30.csv',
+  'dynamics_df_test_covid_1.csv',
+  'dynamics_df_test_covid_5.csv',
+  'dynamics_df_test_covid_10.csv',
+  'dynamics_df_test_flu_1.csv',
+  'dynamics_df_test_flu_5.csv',
+  'dynamics_df_test_flu_10.csv'
 ]
+
+// Generate scenario configurations from CSV files
+const generateScenarioConfig = () => {
+  const config = {}
+  availableCsvFiles.forEach(filename => {
+    const parsed = parseCsvFilename(filename)
+    const key = filename.replace(/\.csv$/, '').replace(/^dynamics_df_/, '')
+    config[key] = {
+      ...parsed,
+      dynamicsPath: `/data/${filename}`,
+      weeklyHospPath: null // Weekly hospitalization files may not exist for all scenarios
+    }
+  })
+  return config
+}
+
+const scenarioConfig = generateScenarioConfig()
+
+// Generate scenario options from available files, sorted logically
+const scenarioOptions = Object.entries(scenarioConfig)
+  .map(([key, config]) => ({
+    id: key,
+    label: config.label,
+    type: config.type,
+    order: config.type === 'baseline' ? 0 : 
+           config.type === 'contact' ? 1 : 
+           config.type === 'testing' ? 2 : 3
+  }))
+  .sort((a, b) => {
+    if (a.order !== b.order) return a.order - b.order
+    return a.label.localeCompare(b.label)
+  })
 
   const diseases = ['covid', 'flu', 'rsv']
   const ages = ['infant', 'preschool', 'child', 'adult', 'senior']
@@ -69,8 +148,48 @@ const scenarioOptions = [
     adult: '#3b82f6',
     senior: '#8b5cf6'
   }
+  // Tick arrays for different screen sizes
+  const dayTicks10 = Array.from({length: 25}, (_, i) => i * 10)  // 0,10,20...240
+  const dayTicks20 = Array.from({length: 13}, (_, i) => i * 20)  // 0,20,40...240
+  const dayTicks30 = Array.from({length: 9}, (_, i) => i * 30)   // 0,30,60...240
+  const dayTicks60 = Array.from({length: 5}, (_, i) => i * 60)   // 0,60,120,180,240
+  
+  // Helper to get appropriate ticks based on width
+  const getResponsiveTicks = (width, baseInterval = 10) => {
+    if (baseInterval === 20) {
+      // For Age Group Breakdown charts
+      if (width >= 500) return dayTicks20
+      if (width >= 300) return dayTicks60
+      return dayTicks60
+    }
+    // For other charts (base interval 10)
+    if (width >= 800) return dayTicks10
+    if (width >= 500) return dayTicks20
+    if (width >= 350) return dayTicks30
+    return dayTicks60
+  }
+
+// Responsive chart wrapper that passes width to children for dynamic tick selection
+const ResponsiveChartWrapper = ({ height, children, baseInterval = 10 }) => {
+  const [chartWidth, setChartWidth] = useState(800)
+  
+  const handleResize = useCallback((width, height) => {
+    if (width > 0) {
+      setChartWidth(width)
+    }
+  }, [])
+  
+  const ticks = useMemo(() => getResponsiveTicks(chartWidth, baseInterval), [chartWidth, baseInterval])
+  
+  return (
+    <ResponsiveContainer width="100%" height={height} onResize={handleResize}>
+      {children(ticks)}
+    </ResponsiveContainer>
+  )
+}
 
 const intensityOptions = [
+  { label: 'Base', value: 'base' },
   { label: 'Low', value: 'low' },
   { label: 'Medium', value: 'medium' },
   { label: 'High', value: 'high' }
@@ -89,63 +208,24 @@ const parameterDefinitions = [
     label: 'Students ↔ Students',
     description: 'Reduction on student contact rate with other students at school',
     optionSet: 'intensity',
-    defaultValue: 'medium'
-  },
-  {
-    id: 'studentAdultContact',
-    label: 'Students ↔ Adults',
-    description: 'Reduction on student contact rate with adults at school',
-    optionSet: 'intensity',
-    defaultValue: 'medium'
-  },
-  {
-    id: 'adultStudentContact',
-    label: 'Adults ↔ Students',
-    description: 'Reduction on adult contact rate with students at school',
-    optionSet: 'intensity',
-    defaultValue: 'medium'
-  },
-  {
-    id: 'adultAdultContact',
-    label: 'Adults ↔ Adults',
-    description: 'Reduction on adult contact rate with other adults at school',
-    optionSet: 'intensity',
-    defaultValue: 'medium'
-  },
-  {
-    id: 'covidVaccination',
-    label: 'COVID-19 vaccination',
-    description: 'Proportion vaccinated',
-    optionSet: 'coverage',
-    defaultValue: 'none'
-  },
-  {
-    id: 'fluVaccination',
-    label: 'Influenza vaccination',
-    description: 'Proportion vaccinated',
-    optionSet: 'coverage',
-    defaultValue: 'none'
+    defaultValue: 'base',
+    detailUrl: '/student-student-contact.html'
   },
   {
     id: 'covidTesting',
     label: 'COVID-19 testing',
     description: 'Proportion of students tested daily',
     optionSet: 'coverage',
-    defaultValue: 'none'
+    defaultValue: 'none',
+    detailUrl: '/covid-testing.html'
   },
   {
     id: 'fluTesting',
     label: 'Influenza testing',
     description: 'Proportion of students tested daily',
     optionSet: 'coverage',
-    defaultValue: 'none'
-  },
-  {
-    id: 'rsvTesting',
-    label: 'RSV testing',
-    description: 'Proportion of students tested daily',
-    optionSet: 'coverage',
-    defaultValue: 'none'
+    defaultValue: 'none',
+    detailUrl: '/flu-testing.html'
   }
 ]
 
@@ -159,9 +239,9 @@ const Dashboard = () => {
   const [weeklyHospData, setWeeklyHospData] = useState({})
   const [loading, setLoading] = useState(true)
   const [loadErrors, setLoadErrors] = useState([])
-  const [selectedDisease, setSelectedDisease] = useState('covid')
-  const [selectedScenario, setSelectedScenario] = useState('compare')
-  const [selectedView, setSelectedView] = useState('infections')
+  // Default to COVID-19 and infections view (no longer user-selectable)
+  const selectedDisease = 'covid'
+  const selectedView = 'infections'
   const [parameterSelections, setParameterSelections] = useState(parameterDefaults)
 
   useEffect(() => {
@@ -184,16 +264,24 @@ const Dashboard = () => {
       const weekly = {}
 
       await Promise.all(
-        Object.entries(scenarioConfig).map(async ([key, files]) => {
+        Object.entries(scenarioConfig).map(async ([key, config]) => {
           try {
-            const [dyn, hosp] = await Promise.all([
-              fetchCsv(files.dynamicsPath),
-              fetchCsv(files.weeklyHospPath)
-            ])
+            const dyn = await fetchCsv(config.dynamicsPath)
             dynamics[key] = dyn
-            weekly[key] = hosp
-      } catch (error) {
-            errors.push(`${files.shortLabel}: ${error.message}`)
+            // Weekly hospitalization files may not exist for all scenarios
+            if (config.weeklyHospPath) {
+              try {
+                const hosp = await fetchCsv(config.weeklyHospPath)
+                weekly[key] = hosp
+              } catch (hospError) {
+                // Weekly hospitalization file not found, skip it
+                weekly[key] = null
+              }
+            } else {
+              weekly[key] = null
+            }
+          } catch (error) {
+            errors.push(`${config.shortLabel}: ${error.message}`)
           }
         })
       )
@@ -201,7 +289,7 @@ const Dashboard = () => {
       setDynamicsData(dynamics)
       setWeeklyHospData(weekly)
       setLoadErrors(errors)
-        setLoading(false)
+      setLoading(false)
     }
 
     loadData()
@@ -209,9 +297,66 @@ const Dashboard = () => {
 
   const chartClassType = selectedView === 'infections' ? 'symptomatic' : 'recovered'
 
-  const activeScenarioKeys =
-    selectedScenario === 'compare' ? ['testing', 'vaccination'] : [selectedScenario]
+  // Find matching scenario based on parameter selections
+  const selectedScenario = useMemo(() => {
+    // Map parameter selections to CSV file
+    const contactReduction = parameterSelections.studentStudentContact
+    const covidTesting = parameterSelections.covidTesting
+    const fluTesting = parameterSelections.fluTesting
 
+    // Priority: Check testing first (more specific), then contact reduction, then baseline
+    // Check testing match (COVID or Flu)
+    if (covidTesting !== 'none') {
+      const testingMap = { none: null, low: 1, medium: 5, high: 10 }
+      const targetPercentage = testingMap[covidTesting]
+      for (const [key, config] of Object.entries(scenarioConfig)) {
+        if (config.testing.disease === 'covid' && config.testing.percentage === targetPercentage) {
+          return key
+        }
+      }
+    }
+
+    if (fluTesting !== 'none') {
+      const testingMap = { none: null, low: 1, medium: 5, high: 10 }
+      const targetPercentage = testingMap[fluTesting]
+      for (const [key, config] of Object.entries(scenarioConfig)) {
+        if (config.testing.disease === 'flu' && config.testing.percentage === targetPercentage) {
+          return key
+        }
+      }
+    }
+
+    // Check contact reduction match (only reached if no testing is active)
+    if (contactReduction === 'base') {
+      // "base" means no contact reduction, match baseline
+      for (const [key, config] of Object.entries(scenarioConfig)) {
+        if (config.type === 'baseline') {
+          return key
+        }
+      }
+    } else {
+      // Check for contact reduction scenarios (low: 10%, medium: 20%, high: 30%)
+      const contactMap = { low: 10, medium: 20, high: 30 }
+      const targetPercentage = contactMap[contactReduction]
+      for (const [key, config] of Object.entries(scenarioConfig)) {
+        if (config.contactReduction === targetPercentage) {
+          return key
+        }
+      }
+    }
+
+    // Default to baseline
+    for (const [key, config] of Object.entries(scenarioConfig)) {
+      if (config.type === 'baseline') {
+        return key
+      }
+    }
+
+    // Fallback to first available scenario
+    return scenarioOptions[0]?.id || 'base'
+  }, [parameterSelections])
+
+  const activeScenarioKeys = [selectedScenario]
   const availableScenarioKeys = activeScenarioKeys.filter(key => dynamicsData[key]?.length)
 
   const maxValue = useMemo(() => {
@@ -223,39 +368,6 @@ const Dashboard = () => {
       return Math.max(maxSoFar, scenarioMax)
     }, 100)
   }, [availableScenarioKeys, dynamicsData, selectedDisease, chartClassType])
-
-  const scenarioMatchFromParameters = useMemo(() => {
-    const contactSettings = [
-      parameterSelections.studentStudentContact,
-      parameterSelections.studentAdultContact,
-      parameterSelections.adultStudentContact,
-      parameterSelections.adultAdultContact
-    ]
-    const contactsAtDefault = contactSettings.every(setting => setting === 'medium')
-
-    if (!contactsAtDefault) {
-      return null
-    }
-
-    const vaccinationSettings = [
-      parameterSelections.covidVaccination,
-      parameterSelections.fluVaccination
-    ]
-    const testingSettings = [
-      parameterSelections.covidTesting,
-      parameterSelections.fluTesting,
-      parameterSelections.rsvTesting
-    ]
-
-    const vaccinationActive = vaccinationSettings.some(setting => setting !== 'none')
-    const testingActive = testingSettings.some(setting => setting !== 'none')
-
-    if (!vaccinationActive && !testingActive) return 'base'
-    if (vaccinationActive && !testingActive) return 'vaccination'
-    if (!vaccinationActive && testingActive) return 'testing'
-    if (vaccinationActive && testingActive) return 'combo'
-    return null
-  }, [parameterSelections])
 
   if (loading) {
     return (
@@ -289,17 +401,23 @@ const Dashboard = () => {
     return (
       <section className="chart-section" key={`line-${scenarioKey}`}>
         <h2 className="section-title">
-          {selectedDisease.toUpperCase()} {selectedView === 'infections' ? 'Infections' : 'Recoveries'} ·{' '}
+          {selectedDisease === 'covid' ? 'COVID-19' : selectedDisease.toUpperCase()} {selectedView === 'infections' ? 'Infections' : 'Recoveries'} ·{' '}
           {scenarioMeta.shortLabel}
         </h2>
         <div className="dashboard-grid">
           <div className="chart-card" style={{ gridColumn: '1 / -1' }}>
             <h3>Time Series by Age Group</h3>
-            <ResponsiveContainer width="100%" height={400}>
-              <LineChart data={chartData}>
+            <ResponsiveChartWrapper height={400}>
+              {(ticks) => (
+              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis
                   dataKey="day"
+                  type="number"
+                  scale="linear"
+                  domain={[0, 240]}
+                  ticks={selectedView === 'infections' ? dayTicks10 : dayTicks20}
+                  allowDecimals={false}
                   label={{
                     value: 'Day',
                     position: 'insideBottomRight',
@@ -325,14 +443,15 @@ const Dashboard = () => {
                   />
                 ))}
               </LineChart>
-            </ResponsiveContainer>
+              )}
+            </ResponsiveChartWrapper>
           </div>
         </div>
       </section>
     )
   }
 
-  const renderUncertaintyCard = scenarioKey => {
+ const renderUncertaintyCard = scenarioKey => {
     const scenarioMeta = scenarioConfig[scenarioKey]
     const series = buildUncertaintySeries(
       dynamicsData[scenarioKey],
@@ -349,75 +468,125 @@ const Dashboard = () => {
         <h3>
           {scenarioMeta.shortLabel} · 95% CI
         </h3>
-        <ResponsiveContainer width="100%" height={320}>
-          <AreaChart data={series}>
+        <ResponsiveChartWrapper height={320}>
+          {(ticks) => (
+          <ComposedChart data={series} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="day"
-              label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
+              type="number"
+              scale="linear"
+              domain={[0, 240]}
+              ticks={dayTicks20}
+              allowDecimals={false}
+              label={{
+                value: 'Day',
+                position: 'insideBottomRight',
+                offset: -5,
+                textAnchor: 'end'
+              }}
             />
             <YAxis
               label={{ value: 'People', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip />
+            <Legend />
+            {/* UPDATED AREA COMPONENT 
+                dataKey="ci" uses the [lower, upper] array. 
+                This automatically creates a floating band.
+            */}
             <Area
               type="monotone"
-              dataKey="upper"
+              dataKey="ci"
               stroke="none"
               fill={`${scenarioMeta.color}66`}
+              name="95% CI"
             />
-            <Area type="monotone" dataKey="lower" stroke="none" fill="#94a3b8" />
+            {/* Keep your lines for clarity */}
+            <Line
+              type="monotone"
+              dataKey="lower"
+              stroke="#94a3b8"
+              strokeWidth={1}
+              dot={false}
+              name="Lower CI"
+            />
             <Line
               type="monotone"
               dataKey="mean"
               stroke={scenarioMeta.color}
-              strokeWidth={2}
+              strokeWidth={2.5}
               dot={false}
               name="Mean"
             />
-          </AreaChart>
-        </ResponsiveContainer>
+            <Line
+              type="monotone"
+              dataKey="upper"
+              stroke="#94a3b8"
+              strokeWidth={1}
+              dot={false}
+              name="Upper CI"
+            />
+          </ComposedChart>
+          )}
+        </ResponsiveChartWrapper>
       </div>
     )
   }
 
-  const renderWeeklyHospitalCard = scenarioKey => {
-    const scenarioMeta = scenarioConfig[scenarioKey]
-    const weeklySeries = buildWeeklyHospitalSeries(weeklyHospData[scenarioKey], selectedDisease)
-    const latestByAge = buildWeeklyHospitalByAge(weeklyHospData[scenarioKey], selectedDisease)
+const renderDailyHospitalCardByAge = age => {
+    const dynamicsDataForScenario = dynamicsData[selectedScenario]
+    const scenarioMeta = scenarioConfig[selectedScenario]
+    
+    if (!dynamicsDataForScenario || !dynamicsDataForScenario.length) {
+      return null
+    }
+    
+    const dailySeries = buildDailyHospitalSeriesByAge(dynamicsDataForScenario, selectedDisease, age)
 
-    if (!weeklySeries.length) {
+    if (!dailySeries.length) {
       return null
     }
 
     return (
-      <div className="chart-card" key={`weekly-${scenarioKey}`}>
-        <h3>{scenarioMeta.shortLabel} · Weekly Hospitalizations</h3>
+      <div className="chart-card" key={`daily-hosp-${age}`}>
+        <h3 style={{ textTransform: 'capitalize' }}>
+          {age} · Daily Hospitalizations · {selectedDisease === 'covid' ? 'COVID-19' : selectedDisease.toUpperCase()}
+        </h3>
         <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={weeklySeries}>
+          <ComposedChart data={dailySeries}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
-              dataKey="week"
-              label={{ value: 'Week', position: 'insideBottomRight', offset: -5 }}
+              dataKey="day"
+              type="number"
+              scale="linear"
+              domain={[0, 240]}
+              ticks={dayTicks20}
+              allowDecimals={false}
+              label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
             />
             <YAxis
               label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft' }}
             />
             <Tooltip />
             <Legend />
+            {/* UPDATED AREA COMPONENT */}
             <Area 
               type="monotone" 
-              dataKey="upper" 
+              dataKey="ci" 
               stroke="none" 
               fill={`${scenarioMeta.color}66`} 
-              name="Upper CI"
+              name="95% CI"
+              legendType="none" // Optional: Hide from legend if you only want lines shown
             />
-            <Area 
-              type="monotone" 
-              dataKey="lower" 
-              stroke="none" 
-              fill="#94a3b8" 
+            <Line
+              type="monotone"
+              dataKey="lower"
+              stroke="#94a3b8"
+              strokeWidth={1}
+              dot={false}
               name="Lower CI"
+              isAnimationActive={false}
             />
             <Line
               type="monotone"
@@ -428,89 +597,56 @@ const Dashboard = () => {
               name="Mean"
               isAnimationActive={false}
             />
+            <Line
+              type="monotone"
+              dataKey="upper"
+              stroke="#94a3b8"
+              strokeWidth={1}
+              dot={false}
+              name="Upper CI"
+              isAnimationActive={false}
+            />
           </ComposedChart>
         </ResponsiveContainer>
-        <div style={{ marginTop: '24px' }}>
-          <h4 style={{ marginBottom: '12px', color: '#1e293b' }}>Latest Week by Age</h4>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart
-              data={latestByAge}
-              margin={{ top: 10, right: 20, bottom: 30, left: 60 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="age"
-                label={{ value: 'Age Group', position: 'insideBottom', offset: -5 }}
-              />
-              <YAxis
-                label={{
-                  value: 'Hospitalizations',
-                  angle: -90,
-                  position: 'insideLeft',
-                  dy: 20,
-                  style: { textAnchor: 'middle' }
-                }}
-              />
-              <Tooltip />
-              <Bar dataKey="mean" fill={scenarioMeta.color} name="Mean">
-                <ErrorBar dataKey="error" width={6} stroke="#475569" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
       </div>
     )
   }
 
   const renderAgeBreakdownCard = age => {
-    const chartData =
-      selectedScenario === 'compare'
-        ? mergeSeriesByDay([
-            {
-              key: 'testing',
-              data: buildAgeSeries(dynamicsData.testing, selectedDisease, chartClassType, age)
-            },
-            {
-              key: 'vaccination',
-              data: buildAgeSeries(
-                dynamicsData.vaccination,
-                selectedDisease,
-                chartClassType,
-                age
-              )
-            }
-          ])
-        : mergeSeriesByDay([
-            {
-              key: selectedScenario,
-              data: buildAgeSeries(
-                dynamicsData[selectedScenario],
-                selectedDisease,
-                chartClassType,
-                age
-              )
-            }
-          ])
+    const chartData = mergeSeriesByDay([
+      {
+        key: selectedScenario,
+        data: buildAgeSeries(
+          dynamicsData[selectedScenario],
+          selectedDisease,
+          chartClassType,
+          age
+        )
+      }
+    ])
 
     if (!chartData.length) {
       return null
     }
 
-    const linesToRender =
-      selectedScenario === 'compare'
-        ? ['testing', 'vaccination']
-        : [selectedScenario]
+    const linesToRender = [selectedScenario]
 
     return (
       <div key={age} className="chart-card">
         <h3 style={{ textTransform: 'capitalize' }}>
-          {age} · {selectedDisease.toUpperCase()}
+          {age} · {selectedDisease === 'covid' ? 'COVID-19' : selectedDisease.toUpperCase()}
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <LineChart data={chartData}>
+        <ResponsiveChartWrapper height={300} baseInterval={20}>
+          {(ticks) => (
+          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis
               dataKey="day"
+              type="number"
+              scale="linear"
+              domain={[0, 240]}
+              ticks={dayTicks20}
+              allowDecimals={false}
               label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
             />
             <YAxis
@@ -533,15 +669,13 @@ const Dashboard = () => {
               )
             })}
           </LineChart>
-        </ResponsiveContainer>
+          )}
+        </ResponsiveChartWrapper>
       </div>
     )
   }
 
-  const summaryCards =
-    selectedScenario === 'compare'
-      ? ['testing', 'vaccination']
-      : [selectedScenario]
+  const summaryCards = [selectedScenario]
 
   return (
     <div className="dashboard">
@@ -555,62 +689,6 @@ const Dashboard = () => {
         )}
       </header>
 
-      <section className="category-selector">
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ marginBottom: '12px', fontSize: '1.1rem', color: '#1e293b' }}>Select Disease:</h3>
-          <div className="category-buttons">
-            {diseases.map(disease => (
-              <button
-                key={disease}
-                className={`category-btn ${selectedDisease === disease ? 'active' : ''}`}
-                onClick={() => setSelectedDisease(disease)}
-                style={{ textTransform: 'capitalize' }}
-              >
-                {disease.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ marginBottom: '20px' }}>
-          <h3 style={{ marginBottom: '12px', fontSize: '1.1rem', color: '#1e293b' }}>View Type:</h3>
-          <div className="category-buttons">
-            <button
-              className={`category-btn ${selectedView === 'infections' ? 'active' : ''}`}
-              onClick={() => setSelectedView('infections')}
-            >
-              Infections (Symptomatic)
-            </button>
-            <button
-              className={`category-btn ${selectedView === 'recoveries' ? 'active' : ''}`}
-              onClick={() => setSelectedView('recoveries')}
-            >
-              Recoveries
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <h3 style={{ marginBottom: '12px', fontSize: '1.1rem', color: '#1e293b' }}>Scenario:</h3>
-          <div className="category-buttons">
-            {scenarioOptions.map(option => (
-            <button
-                key={option.id}
-                className={`category-btn ${selectedScenario === option.id ? 'active' : ''}`}
-                onClick={() => setSelectedScenario(option.id)}
-                disabled={option.id !== 'compare' && !dynamicsData[option.id]}
-                style={{
-                  opacity:
-                    option.id !== 'compare' && !dynamicsData[option.id] ? 0.5 : 1
-                }}
-              >
-                {option.label}
-            </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
       <section className="parameter-controls">
         <div className="parameter-controls-header">
           <div>
@@ -623,9 +701,9 @@ const Dashboard = () => {
           </div>
           <div className="parameter-hint" style={{ color: '#0369a1' }}>
             Current selections align best with:{' '}
-            {scenarioMatchFromParameters && scenarioConfig[scenarioMatchFromParameters]
-              ? scenarioConfig[scenarioMatchFromParameters].shortLabel
-              : 'Scenario data pending'}
+            {selectedScenario && scenarioConfig[selectedScenario]
+              ? scenarioConfig[selectedScenario].shortLabel
+              : 'No matching scenario found'}
           </div>
         </div>
         <div className="parameter-grid">
@@ -634,19 +712,73 @@ const Dashboard = () => {
             return (
               <div key={def.id} className="parameter-card">
                 <label htmlFor={def.id}>
-                  <span>{def.label}</span>
+                  <span className="parameter-label-wrapper">
+                    {def.label}
+                    {def.detailUrl ? (
+                      <a
+                        href={def.detailUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="info-icon-wrapper info-icon-link"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Click for more details"
+                      >
+                        <svg
+                          className="info-icon"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+                        </svg>
+                        <span className="info-tooltip">{def.description} (Click for more details)</span>
+                      </a>
+                    ) : (
+                      <span className="info-icon-wrapper">
+                        <svg
+                          className="info-icon"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 16 16"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+                        </svg>
+                        <span className="info-tooltip">{def.description}</span>
+                      </span>
+                    )}
+                  </span>
                   <small>{def.description}</small>
                 </label>
                 <select
                   id={def.id}
                   className="parameter-select"
                   value={parameterSelections[def.id]}
-                  onChange={event =>
-                    setParameterSelections(prev => ({
-                      ...prev,
-                      [def.id]: event.target.value
-                    }))
-                  }
+                  onChange={event => {
+                    const newValue = event.target.value
+                    setParameterSelections(prev => {
+                      const updated = { ...prev, [def.id]: newValue }
+                      // Reset other parameters to their defaults when one is changed
+                      if (def.id === 'studentStudentContact') {
+                        updated.covidTesting = 'none'
+                        updated.fluTesting = 'none'
+                      } else if (def.id === 'covidTesting') {
+                        updated.studentStudentContact = 'base'
+                        updated.fluTesting = 'none'
+                      } else if (def.id === 'fluTesting') {
+                        updated.studentStudentContact = 'base'
+                        updated.covidTesting = 'none'
+                      }
+                      return updated
+                    })
+                  }}
                 >
                   {options.map(option => (
                     <option key={option.value} value={option.value}>
@@ -662,7 +794,7 @@ const Dashboard = () => {
 
       <section className="key-findings">
         <h2>
-          Summary Statistics · {selectedDisease.toUpperCase()} ·{' '}
+          Summary Statistics · {selectedDisease === 'covid' ? 'COVID-19' : selectedDisease.toUpperCase()} ·{' '}
           {selectedView === 'infections' ? 'Infections' : 'Recoveries'}
         </h2>
         <div className="findings-grid">
@@ -706,55 +838,6 @@ const Dashboard = () => {
           availableScenarioKeys.map(renderScenarioLineChart)
         )}
 
-        {selectedScenario === 'compare' && dynamicsData.testing && dynamicsData.vaccination && (
-          <section className="chart-section">
-            <h2 className="section-title">Scenario Comparison · Cumulative Burden</h2>
-            <div className="dashboard-grid">
-              {['testing', 'vaccination'].map(scenarioKey => {
-                const chartData = prepareChartData(
-                  dynamicsData[scenarioKey],
-                  selectedDisease,
-                  chartClassType
-                )
-                const scenarioMeta = scenarioConfig[scenarioKey]
-                if (!chartData.length) {
-                  return null
-                }
-                return (
-                  <div className="chart-card" key={`cumulative-${scenarioKey}`}>
-                    <h3>{scenarioMeta.shortLabel}</h3>
-                    <ResponsiveContainer width="100%" height={350}>
-                      <AreaChart data={chartData} stackOffset="expand">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                          dataKey="day"
-                          label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
-                        />
-                        <YAxis
-                          label={{ value: 'Share of Cases', angle: -90, position: 'insideLeft' }}
-                        />
-                    <Tooltip />
-                    <Legend />
-                    {ages.map(age => (
-                      <Area
-                            key={`${scenarioKey}-area-${age}`}
-                        type="monotone"
-                        dataKey={age}
-                        stackId="1"
-                        stroke={ageColors[age]}
-                            fill={ageColors[age]}
-                        name={age.charAt(0).toUpperCase() + age.slice(1)}
-                            fillOpacity={0.4}
-                      />
-                    ))}
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-                )
-              })}
-            </div>
-          </section>
-        )}
 
         <section className="chart-section">
           <h2 className="section-title">Uncertainty Bands</h2>
@@ -764,9 +847,9 @@ const Dashboard = () => {
         </section>
 
         <section className="chart-section">
-          <h2 className="section-title">Weekly Hospitalizations</h2>
+          <h2 className="section-title">Daily Hospitalizations</h2>
           <div className="dashboard-grid">
-            {availableScenarioKeys.map(renderWeeklyHospitalCard)}
+            {ages.map(renderDailyHospitalCardByAge)}
           </div>
         </section>
 
@@ -787,7 +870,7 @@ const prepareChartData = (data, disease, classType) => {
   return data
     .filter(row => row.day_mean != null && !isNaN(row.day_mean))
     .map(row => {
-      const result = { day: Math.round(row.day_mean) }
+      const result = { day: Math.round(row.day_mean) + 1 }
 
       ages.forEach(age => {
         const columnName = `${disease}_${classType}_${age}_mean`
@@ -844,7 +927,7 @@ const buildUncertaintySeries = (data, disease, classType) => {
   return data
     .filter(row => row.day_mean != null && !isNaN(row.day_mean))
     .map(row => {
-      const day = Math.round(row.day_mean)
+      const day = Math.round(row.day_mean) + 1
       let mean = 0
       let lower = 0
       let upper = 0
@@ -859,25 +942,32 @@ const buildUncertaintySeries = (data, disease, classType) => {
         upper += row[upperKey] || 0
       })
 
-      return { day, mean, lower, upper }
+      // ADD THIS: Create an array [min, max] for the range area
+      return { day, mean, lower, upper, ci: [lower, upper] }
     })
     .sort((a, b) => a.day - b.day)
 }
 
-const buildWeeklyHospitalSeries = (data, disease) => {
+const buildDailyHospitalSeriesByAge = (data, disease, age) => {
   if (!data) return []
 
-  return data.map((row, index) => {
-    const entry = { week: index + 1, mean: 0, lower: 0, upper: 0 }
-
-    ages.forEach(age => {
-      entry.mean += row[`${disease}_hospitalized_${age}_weekly_mean`] || 0
-      entry.lower += row[`${disease}_hospitalized_${age}_weekly_ci_lower`] || 0
-      entry.upper += row[`${disease}_hospitalized_${age}_weekly_ci_upper`] || 0
+  // Filter and process daily data for a specific age group
+  const dailyData = data
+    .filter(row => row.day_mean != null && !isNaN(row.day_mean))
+    .map(row => {
+      const day = Math.round(row.day_mean) + 1
+      const mean = row[`${disease}_new_hospitalizations_${age}_mean`] || 0
+      const lower = row[`${disease}_new_hospitalizations_${age}_ci_lower`] || 0
+      const upper = row[`${disease}_new_hospitalizations_${age}_ci_upper`] || 0
+      
+      // Create the range array for CI
+      const ci = [lower, upper]
+      
+      return { day, mean, lower, upper, ci }
     })
-
-    return entry
-  })
+    .sort((a, b) => a.day - b.day)
+  
+  return dailyData
 }
 
 const buildWeeklyHospitalByAge = (data, disease) => {
@@ -903,7 +993,7 @@ const buildAgeSeries = (data, disease, classType, age) => {
   return data
     .filter(row => row.day_mean != null && !isNaN(row.day_mean))
     .map(row => ({
-      day: Math.round(row.day_mean),
+      day: Math.round(row.day_mean) + 1,
       value: row[`${disease}_${classType}_${age}_mean`] || 0
     }))
 }

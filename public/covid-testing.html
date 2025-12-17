@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COVID-19 Testing Parameter Details</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+        'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      background: #f5f7fa;
+      color: #1e293b;
+      line-height: 1.6;
+      padding: 0;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+    .header {
+      background: #1e3a8a;
+      color: white;
+      padding: 40px 20px;
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .header h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1rem;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+    .content-card {
+      background: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+    }
+    .content-card h2 {
+      color: #1e293b;
+      font-size: 1.5rem;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    .content-card h3 {
+      color: #475569;
+      font-size: 1.2rem;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .content-card p {
+      margin-bottom: 15px;
+      color: #475569;
+    }
+    .content-card ul, .content-card ol {
+      margin-left: 20px;
+      margin-bottom: 15px;
+      color: #475569;
+    }
+    .content-card li {
+      margin-bottom: 8px;
+    }
+    .highlight-box {
+      background: #eff6ff;
+      border-left: 4px solid #2563eb;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    .parameter-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 20px 0;
+    }
+    .parameter-table th,
+    .parameter-table td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .parameter-table th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .parameter-table td {
+      color: #475569;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>COVID-19 Testing Parameter</h1>
+    <p>Detailed Information and Guidelines</p>
+  </div>
+  <div class="container">
+    <a href="/" class="back-link">← Back to Dashboard</a>
+    
+    <div class="content-card">
+      <h2>Overview</h2>
+      <p>
+        The COVID-19 Testing parameter determines the proportion of students tested daily for 
+        SARS-CoV-2 infection. Regular testing is a key surveillance and early detection strategy 
+        that can identify asymptomatic and pre-symptomatic cases, enabling rapid isolation and 
+        contact tracing to prevent outbreaks.
+      </p>
+      <p>
+        This intervention is particularly effective when combined with other mitigation measures 
+        such as vaccination, masking, and social distancing. Testing helps break transmission 
+        chains by identifying infectious individuals before they can spread the virus widely.
+      </p>
+    </div>
+
+    <div class="content-card">
+      <h2>Coverage Levels</h2>
+      <p>The parameter can be set to different coverage levels:</p>
+      <table class="parameter-table">
+        <thead>
+          <tr>
+            <th>Coverage Level</th>
+            <th>Description</th>
+            <th>Daily Testing Rate</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>None</strong></td>
+            <td>No routine testing program</td>
+            <td>0%</td>
+          </tr>
+          <tr>
+            <td><strong>Low</strong></td>
+            <td>Targeted testing of high-risk groups or symptomatic individuals</td>
+            <td>5-10% of students</td>
+          </tr>
+          <tr>
+            <td><strong>Medium</strong></td>
+            <td>Regular testing of a significant portion of the student population</td>
+            <td>10-20% of students</td>
+          </tr>
+          <tr>
+            <td><strong>High</strong></td>
+            <td>Comprehensive testing program covering most or all students</td>
+            <td>20-30% of students</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="content-card">
+      <h2>Testing Strategies</h2>
+      <h3>None (Baseline)</h3>
+      <p>
+        No routine testing program. Testing may occur only for symptomatic individuals or 
+        during confirmed outbreaks. This represents the baseline scenario with minimal 
+        surveillance.
+      </p>
+
+      <h3>Low Coverage</h3>
+      <ul>
+        <li>Test symptomatic students and staff</li>
+        <li>Targeted testing of close contacts of confirmed cases</li>
+        <li>Optional voluntary testing for high-risk individuals</li>
+        <li>Testing during known exposure events</li>
+      </ul>
+
+      <h3>Medium Coverage</h3>
+      <ul>
+        <li>Regular weekly or bi-weekly testing of a rotating sample of students</li>
+        <li>Testing of all close contacts within 24-48 hours of exposure</li>
+        <li>Surveillance testing of high-risk groups (e.g., athletes, performing arts)</li>
+        <li>Pooled testing strategies to increase efficiency</li>
+        <li>Rapid antigen tests for frequent screening</li>
+      </ul>
+
+      <h3>High Coverage</h3>
+      <ul>
+        <li>Daily or near-daily testing of all students (e.g., 10% tested daily = 100% over 10 days)</li>
+        <li>Comprehensive surveillance testing program</li>
+        <li>Combination of PCR and rapid antigen tests</li>
+        <li>Automated reporting and contact tracing integration</li>
+        <li>Testing before and after school events or travel</li>
+      </ul>
+    </div>
+
+    <div class="content-card">
+      <h2>Test Types and Characteristics</h2>
+      <h3>Rapid Antigen Tests</h3>
+      <ul>
+        <li><strong>Advantages:</strong> Fast results (15-30 minutes), lower cost, can be performed on-site</li>
+        <li><strong>Limitations:</strong> Lower sensitivity, especially for asymptomatic cases</li>
+        <li><strong>Best Use:</strong> Frequent screening, early detection of high viral load cases</li>
+      </ul>
+
+      <h3>PCR Tests</h3>
+      <ul>
+        <li><strong>Advantages:</strong> High sensitivity and specificity, gold standard for diagnosis</li>
+        <li><strong>Limitations:</strong> Longer turnaround time (24-48 hours), higher cost, requires lab processing</li>
+        <li><strong>Best Use:</strong> Confirmatory testing, diagnosis of symptomatic individuals</li>
+      </ul>
+
+      <h3>Pooled Testing</h3>
+      <ul>
+        <li>Combines multiple samples for batch processing</li>
+        <li>Cost-effective for large-scale surveillance</li>
+        <li>If pool is positive, individual tests are performed to identify positive cases</li>
+      </ul>
+    </div>
+
+    <div class="content-card">
+      <h2>Impact on Disease Transmission</h2>
+      <p>
+        Testing programs reduce transmission through several mechanisms:
+      </p>
+      <ul>
+        <li><strong>Early Detection:</strong> Identifies cases before they become highly infectious</li>
+        <li><strong>Isolation:</strong> Enables rapid isolation of positive cases</li>
+        <li><strong>Contact Tracing:</strong> Facilitates identification and quarantine of exposed individuals</li>
+        <li><strong>Behavioral Change:</strong> Awareness of test results may encourage safer behaviors</li>
+        <li><strong>Outbreak Prevention:</strong> Detects clusters early before they become large outbreaks</li>
+      </ul>
+      <div class="highlight-box">
+        <strong>Research Findings:</strong> Studies suggest that testing 10% of students daily 
+        can reduce COVID-19 transmission in schools by 30-50%, particularly when combined with 
+        other mitigation measures. The effectiveness increases with higher coverage rates.
+      </div>
+    </div>
+
+    <div class="content-card">
+      <h2>Implementation Considerations</h2>
+      <h3>Logistical Requirements</h3>
+      <ul>
+        <li>Test procurement and supply chain management</li>
+        <li>Staffing for test administration and coordination</li>
+        <li>Infrastructure for sample collection and storage</li>
+        <li>Data management and reporting systems</li>
+        <li>Privacy and consent procedures</li>
+      </ul>
+
+      <h3>Cost Considerations</h3>
+      <p>
+        Testing programs require significant financial resources. Costs include:
+      </p>
+      <ul>
+        <li>Test kits and supplies</li>
+        <li>Laboratory processing fees</li>
+        <li>Staff time for administration and coordination</li>
+        <li>Data management and reporting infrastructure</li>
+        <li>Follow-up testing and contact tracing</li>
+      </ul>
+
+      <h3>Compliance and Participation</h3>
+      <p>
+        Successful testing programs require:
+      </p>
+      <ul>
+        <li>Clear communication about the purpose and benefits</li>
+        <li>Easy and convenient testing procedures</li>
+        <li>Privacy protections and confidentiality</li>
+        <li>Support for students who test positive (isolation support, academic continuity)</li>
+        <li>Parental and community buy-in</li>
+      </ul>
+    </div>
+
+    <div class="content-card">
+      <h2>Best Practices</h2>
+      <ul>
+        <li>Combine testing with other interventions (vaccination, masking, ventilation)</li>
+        <li>Use rapid tests for frequent screening and PCR for confirmation</li>
+        <li>Implement clear protocols for positive test results (isolation, contact tracing)</li>
+        <li>Ensure rapid turnaround times to maximize effectiveness</li>
+        <li>Maintain accurate records for surveillance and outbreak investigation</li>
+        <li>Provide support services for students in isolation</li>
+        <li>Regularly evaluate and adjust testing strategies based on local conditions</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>
