@@ -160,6 +160,127 @@ body {
   border-bottom: 2px solid #e2e8f0;
 }
 
+/* Model Overview Section */
+.model-overview {
+  background: white;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.overview-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1e293b;
+  text-align: left;
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s;
+}
+
+.overview-toggle:hover {
+  background: #f8fafc;
+}
+
+.overview-toggle[aria-expanded="true"] {
+  border-bottom-color: #e2e8f0;
+}
+
+.overview-chevron {
+  color: #64748b;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+
+.overview-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+.overview-body {
+  padding: 28px 40px 36px;
+}
+
+.overview-intro {
+  max-width: 860px;
+  margin-bottom: 24px;
+}
+
+.overview-intro p {
+  font-size: 1rem;
+  color: #334155;
+  line-height: 1.7;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.overview-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px 24px;
+}
+
+.overview-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.overview-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.overview-card li {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.55;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.overview-card li em {
+  display: block;
+  margin-top: 3px;
+  color: #64748b;
+  font-style: italic;
+}
+
+.age-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 5px;
+}
+
+.overview-hint {
+  margin-top: 14px;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+}
+
 .parameter-controls {
   background: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
@@ -382,10 +503,17 @@ body {
 .section-title {
   font-size: 1.75rem;
   color: #1e293b;
-  margin-bottom: 24px;
+  margin-bottom: 8px;
   font-weight: 600;
   padding-bottom: 12px;
   border-bottom: 2px solid #e2e8f0;
+}
+
+.section-subtitle {
+  font-size: 0.9rem;
+  color: #64748b;
+  margin-bottom: 24px;
+  line-height: 1.5;
 }
 
 .dashboard-grid {
@@ -455,4 +583,40 @@ body {
   .category-btn {
     width: 100%;
   }
+}
+
+
+/* Disease tabs */
+.disease-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 0 40px 0;
+  margin-bottom: -1px;
+}
+
+.disease-tab {
+  padding: 10px 24px;
+  border: 1px solid #e2e8f0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  background: #f8fafc;
+  color: #64748b;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.disease-tab:hover {
+  background: #f1f5f9;
+  color: #334155;
+}
+
+.disease-tab--active {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+  font-weight: 600;
+  position: relative;
+  z-index: 1;
 }
