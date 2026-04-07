@@ -16,6 +16,24 @@ import {
 } from 'recharts'
 import Papa from 'papaparse'
 
+const XAxisInfoButton = () => (
+  <span className="info-icon-wrapper" style={{ marginLeft: '8px' }}>
+    <svg
+      className="info-icon"
+      width="16"
+      height="16"
+      viewBox="0 0 16 16"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+      <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+    </svg>
+    <span className="info-tooltip">Day 0 is the initial condition (starting point). Day 1 is after the first day of simulation, etc.</span>
+  </span>
+)
+
 const parseCsvFilename = (filename) => {
   const base = filename.replace(/\.csv$/, '').replace(/^.*\//, '')
   if (base === 'dynamics_df_base') {
@@ -124,10 +142,10 @@ const ResponsiveChartWrapper = ({ height, children, baseInterval = 10 }) => {
 }
 
 const contactOptions = [
-  { label: 'None',         value: 'none' },
-  { label: 'Low (30%)',    value: '30' },
-  { label: 'Medium (60%)', value: '60' },
-  { label: 'High (90%)',   value: '90' },
+  { label: 'Baseline',                value: 'none' },
+  { label: 'Low (30% reduction)',     value: '30' },
+  { label: 'Medium (60% reduction)',  value: '60' },
+  { label: 'High (90% reduction)',    value: '90' },
 ]
 
 const coverageOptions = [
@@ -281,6 +299,9 @@ const Dashboard = () => {
               </LineChart>
               )}
             </ResponsiveChartWrapper>
+            <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
+              <XAxisInfoButton />
+            </div>
           </div>
         </div>
       </section>
@@ -366,6 +387,9 @@ const Dashboard = () => {
           </ComposedChart>
           )}
         </ResponsiveChartWrapper>
+        <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
+          <XAxisInfoButton />
+        </div>
       </div>
     )
   }
@@ -399,7 +423,12 @@ const renderDailyHospitalCardByAge = age => {
               domain={[0, 240]}
               ticks={dayTicks20}
               allowDecimals={false}
-              label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
+              label={{
+                value: 'Day',
+                position: 'insideBottomRight',
+                offset: -5,
+                textAnchor: 'end'
+              }}
             />
             <YAxis
               label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft', offset: -10 }}
@@ -444,9 +473,12 @@ const renderDailyHospitalCardByAge = age => {
             />
           </ComposedChart>
         </ResponsiveContainer>
-        <p style={{ fontSize: '0.75rem', color: '#6b7280', marginTop: '0.5rem', fontStyle: 'italic' }}>
-          Values are averages across simulation runs. Decimal values (e.g., 0.3) represent the expected number of hospitalizations on a given day — not a whole-person count.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginTop: '0.5rem' }}>
+          <p style={{ fontSize: '0.75rem', color: '#6b7280', fontStyle: 'italic', margin: 0 }}>
+            Values are averages across simulation runs. Decimal values (e.g., 0.3) represent the expected number of hospitalizations on a given day — not a whole-person count.
+          </p>
+          <span style={{ fontSize: '0.75rem', color: '#64748b', flexShrink: 0 }}><XAxisInfoButton /></span>
+        </div>
       </div>
     )
   }
@@ -486,10 +518,12 @@ const renderDailyHospitalCardByAge = age => {
               domain={[0, 240]}
               ticks={dayTicks20}
               allowDecimals={false}
-              label={{ value: 'Day', position: 'insideBottomRight', offset: -5 }}
-            />
-            <YAxis
-              label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft', offset: 10 }}
+              label={{
+                value: 'Day',
+                position: 'insideBottomRight',
+                offset: -5,
+                textAnchor: 'end'
+              }}
             />
             <Tooltip />
             <Legend />
@@ -510,6 +544,9 @@ const renderDailyHospitalCardByAge = age => {
           </LineChart>
           )}
         </ResponsiveChartWrapper>
+        <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
+          <XAxisInfoButton />
+        </div>
       </div>
     )
   }
@@ -560,7 +597,7 @@ const renderDailyHospitalCardByAge = age => {
                   <li><span className="age-dot" style={{background:'#ef4444'}}></span><strong>Infants</strong> — age 0–2</li>
                   <li><span className="age-dot" style={{background:'#f59e0b'}}></span><strong>Preschool</strong> — age 3–5</li>
                   <li><span className="age-dot" style={{background:'#10b981'}}></span><strong>Children</strong> — age 6–17 (school students)</li>
-                  <li><span className="age-dot" style={{background:'#3b82f6'}}></span><strong>Adults</strong> — age 18–64 (teachers &amp; staff)</li>
+                  <li><span className="age-dot" style={{background:'#3b82f6'}}></span><strong>Adults</strong> — age 18–64 (general population, including teachers &amp; staff)</li>
                   <li><span className="age-dot" style={{background:'#8b5cf6'}}></span><strong>Older Adults</strong> — age 65+</li>
                 </ul>
               </div>
