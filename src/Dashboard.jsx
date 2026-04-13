@@ -26,9 +26,9 @@ const XAxisInfoButton = () => (
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-      <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-      <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+      <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
+      <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="8" cy="5.5" r="0.5" fill="currentColor" />
     </svg>
     <span className="info-tooltip">Day 0 is the initial condition (starting point). Day 1 is after the first day of simulation, etc.</span>
   </span>
@@ -46,12 +46,12 @@ const parseCsvFilename = (filename) => {
     }
   }
   const contactMatch = base.match(/_contact_(\d+)/)
-  const covidMatch   = base.match(/_test_covid_(\d+)/)
-  const fluMatch     = base.match(/_test_flu_(\d+)/)
+  const covidMatch = base.match(/_test_covid_(\d+)/)
+  const fluMatch = base.match(/_test_flu_(\d+)/)
   const parts = []
   if (contactMatch) parts.push(`${contactMatch[1]}% contact reduction`)
-  if (covidMatch)   parts.push(`COVID Test ${covidMatch[1]}%`)
-  if (fluMatch)     parts.push(`Flu Test ${fluMatch[1]}%`)
+  if (covidMatch) parts.push(`COVID Test ${covidMatch[1]}%`)
+  if (fluMatch) parts.push(`Flu Test ${fluMatch[1]}%`)
   const label = parts.join(' + ') || filename
   return {
     type: 'intervention',
@@ -64,13 +64,13 @@ const parseCsvFilename = (filename) => {
 
 // Generate all 64 combination filenames programmatically
 const contactVals = [null, 30, 60, 90]
-const covidVals   = [null, 1, 5, 10]
-const fluVals     = [null, 1, 5, 10]
+const covidVals = [null, 1, 5, 10]
+const fluVals = [null, 1, 5, 10]
 
 const availableCsvFiles = []
 for (const c of contactVals) for (const cv of covidVals) for (const fv of fluVals) {
   let name = 'dynamics_df'
-  if (c)  name += `_contact_${c}`
+  if (c) name += `_contact_${c}`
   if (cv) name += `_test_covid_${cv}`
   if (fv) name += `_test_flu_${fv}`
   if (!c && !cv && !fv) name = 'dynamics_df_base'
@@ -85,55 +85,55 @@ availableCsvFiles.forEach(filename => {
   scenarioConfig[key] = parseCsvFilename(filename)
 })
 
-  const diseases = ['covid', 'flu', 'rsv']
-  const ages = ['infant', 'preschool', 'child', 'adult', 'senior']
-  const ageLabels = {
-    infant:    'Infants (0–2)',
-    preschool: 'Preschool (3–5)',
-    child:     'Children (6–17)',
-    adult:     'Adults (18–64)',
-    senior:    'Older Adults (65+)',
-  }
-  const ageColors = {
-    infant: '#ef4444',
-    preschool: '#f59e0b',
-    child: '#10b981',
-    adult: '#3b82f6',
-    senior: '#8b5cf6'
-  }
-  // Tick arrays for different screen sizes
-  const dayTicks10 = Array.from({length: 25}, (_, i) => i * 10)  // 0,10,20...240
-  const dayTicks20 = Array.from({length: 13}, (_, i) => i * 20)  // 0,20,40...240
-  const dayTicks30 = Array.from({length: 9}, (_, i) => i * 30)   // 0,30,60...240
-  const dayTicks60 = Array.from({length: 5}, (_, i) => i * 60)   // 0,60,120,180,240
-  
-  // Helper to get appropriate ticks based on width
-  const getResponsiveTicks = (width, baseInterval = 10) => {
-    if (baseInterval === 20) {
-      // For Age Group Breakdown charts
-      if (width >= 500) return dayTicks20
-      if (width >= 300) return dayTicks60
-      return dayTicks60
-    }
-    // For other charts (base interval 10)
-    if (width >= 800) return dayTicks10
+const diseases = ['covid', 'flu', 'rsv']
+const ages = ['infant', 'preschool', 'child', 'adult', 'senior']
+const ageLabels = {
+  infant: 'Infants (0–2)',
+  preschool: 'Preschool (3–5)',
+  child: 'Children (6–17)',
+  adult: 'Adults (18–64)',
+  senior: 'Older Adults (65+)',
+}
+const ageColors = {
+  infant: '#ef4444',
+  preschool: '#f59e0b',
+  child: '#10b981',
+  adult: '#3b82f6',
+  senior: '#8b5cf6'
+}
+// Tick arrays for different screen sizes
+const dayTicks10 = Array.from({ length: 25 }, (_, i) => i * 10)  // 0,10,20...240
+const dayTicks20 = Array.from({ length: 13 }, (_, i) => i * 20)  // 0,20,40...240
+const dayTicks30 = Array.from({ length: 9 }, (_, i) => i * 30)   // 0,30,60...240
+const dayTicks60 = Array.from({ length: 5 }, (_, i) => i * 60)   // 0,60,120,180,240
+
+// Helper to get appropriate ticks based on width
+const getResponsiveTicks = (width, baseInterval = 10) => {
+  if (baseInterval === 20) {
+    // For Age Group Breakdown charts
     if (width >= 500) return dayTicks20
-    if (width >= 350) return dayTicks30
+    if (width >= 300) return dayTicks60
     return dayTicks60
   }
+  // For other charts (base interval 10)
+  if (width >= 800) return dayTicks10
+  if (width >= 500) return dayTicks20
+  if (width >= 350) return dayTicks30
+  return dayTicks60
+}
 
 // Responsive chart wrapper that passes width to children for dynamic tick selection
 const ResponsiveChartWrapper = ({ height, children, baseInterval = 10 }) => {
   const [chartWidth, setChartWidth] = useState(800)
-  
+
   const handleResize = useCallback((width, height) => {
     if (width > 0) {
       setChartWidth(width)
     }
   }, [])
-  
+
   const ticks = useMemo(() => getResponsiveTicks(chartWidth, baseInterval), [chartWidth, baseInterval])
-  
+
   return (
     <ResponsiveContainer width="100%" height={height} onResize={handleResize}>
       {children(ticks)}
@@ -142,17 +142,17 @@ const ResponsiveChartWrapper = ({ height, children, baseInterval = 10 }) => {
 }
 
 const contactOptions = [
-  { label: 'Baseline',                value: 'none' },
-  { label: 'Low (30% reduction)',     value: '30' },
-  { label: 'Medium (60% reduction)',  value: '60' },
-  { label: 'High (90% reduction)',    value: '90' },
+  { label: 'Baseline', value: 'none' },
+  { label: 'Low (30% reduction)', value: '30' },
+  { label: 'Medium (60% reduction)', value: '60' },
+  { label: 'High (90% reduction)', value: '90' },
 ]
 
 const coverageOptions = [
-  { label: 'None',         value: 'none' },
-  { label: 'Low (1%)',     value: '1' },
-  { label: 'Medium (5%)',  value: '5' },
-  { label: 'High (10%)',   value: '10' },
+  { label: 'None', value: 'none' },
+  { label: 'Low (1%)', value: '1' },
+  { label: 'Medium (5%)', value: '5' },
+  { label: 'High (10%)', value: '10' },
 ]
 
 const parameterDefinitions = [
@@ -201,7 +201,7 @@ const Dashboard = () => {
     const { studentStudentContact: c, covidTesting: cv, fluTesting: fv } = parameterSelections
     if (c === 'none' && cv === 'none' && fv === 'none') return 'dynamics_df_base'
     let key = 'dynamics_df'
-    if (c  !== 'none') key += `_contact_${c}`
+    if (c !== 'none') key += `_contact_${c}`
     if (cv !== 'none') key += `_test_covid_${cv}`
     if (fv !== 'none') key += `_test_flu_${fv}`
     return key
@@ -263,40 +263,40 @@ const Dashboard = () => {
             <h3>Time Series by Age Group</h3>
             <ResponsiveChartWrapper height={400}>
               {(ticks) => (
-              <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="day"
-                  type="number"
-                  scale="linear"
-                  domain={[0, 240]}
-                  ticks={selectedView === 'infections' ? dayTicks10 : dayTicks20}
-                  allowDecimals={false}
-                  label={{
-                    value: 'Day',
-                    position: 'insideBottomRight',
-                    offset: -5,
-                    textAnchor: 'end'
-                  }}
-                />
-                <YAxis
-                  label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft', offset: 10 }}
-                  domain={[0, maxValue]}
-                />
-                <Tooltip />
-                <Legend />
-                {ages.map(age => (
-                  <Line
-                    key={`${scenarioKey}-${age}`}
-                    type="monotone"
-                    dataKey={age}
-                    stroke={ageColors[age]}
-                    strokeWidth={2}
-                    name={ageLabels[age]}
-                    dot={false}
+                <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="day"
+                    type="number"
+                    scale="linear"
+                    domain={[0, 240]}
+                    ticks={selectedView === 'infections' ? dayTicks10 : dayTicks20}
+                    allowDecimals={false}
+                    label={{
+                      value: 'Day',
+                      position: 'insideBottomRight',
+                      offset: -5,
+                      textAnchor: 'end'
+                    }}
                   />
-                ))}
-              </LineChart>
+                  <YAxis
+                    label={{ value: 'Average Number of Individuals', angle: -90, position: 'insideLeft', offset: 10 }}
+                    domain={[0, maxValue]}
+                  />
+                  <Tooltip />
+                  <Legend />
+                  {ages.map(age => (
+                    <Line
+                      key={`${scenarioKey}-${age}`}
+                      type="monotone"
+                      dataKey={age}
+                      stroke={ageColors[age]}
+                      strokeWidth={2}
+                      name={ageLabels[age]}
+                      dot={false}
+                    />
+                  ))}
+                </LineChart>
               )}
             </ResponsiveChartWrapper>
             <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
@@ -308,7 +308,7 @@ const Dashboard = () => {
     )
   }
 
- const renderUncertaintyCard = scenarioKey => {
+  const renderUncertaintyCard = scenarioKey => {
     const scenarioMeta = scenarioConfig[scenarioKey]
     const series = buildUncertaintySeries(
       dynamicsData[scenarioKey],
@@ -327,64 +327,64 @@ const Dashboard = () => {
         </h3>
         <ResponsiveChartWrapper height={320}>
           {(ticks) => (
-          <ComposedChart data={series} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="day"
-              type="number"
-              scale="linear"
-              domain={[0, 240]}
-              ticks={dayTicks20}
-              allowDecimals={false}
-              label={{
-                value: 'Day',
-                position: 'insideBottomRight',
-                offset: -5,
-                textAnchor: 'end'
-              }}
-            />
-            <YAxis
-              label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft', offset: 10 }}
-            />
-            <Tooltip />
-            <Legend />
-            {/* UPDATED AREA COMPONENT
+            <ComposedChart data={series} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="day"
+                type="number"
+                scale="linear"
+                domain={[0, 240]}
+                ticks={dayTicks20}
+                allowDecimals={false}
+                label={{
+                  value: 'Day',
+                  position: 'insideBottomRight',
+                  offset: -5,
+                  textAnchor: 'end'
+                }}
+              />
+              <YAxis
+                label={{ value: 'Average Number of Individuals', angle: -90, position: 'insideLeft', offset: 10 }}
+              />
+              <Tooltip />
+              <Legend />
+              {/* UPDATED AREA COMPONENT
                 dataKey="ci" uses the [lower, upper] array.
                 This automatically creates a floating band.
             */}
-            <Area
-              type="monotone"
-              dataKey="ci"
-              stroke="none"
-              fill={`${scenarioMeta.color}66`}
-              name="95% CI"
-            />
-            {/* Keep your lines for clarity */}
-            <Line
-              type="monotone"
-              dataKey="lower"
-              stroke="#94a3b8"
-              strokeWidth={1}
-              dot={false}
-              name="Lower CI"
-            />
-            <Line
-              type="monotone"
-              dataKey="mean"
-              stroke={scenarioMeta.color}
-              strokeWidth={2.5}
-              dot={false}
-              name="Mean"
-            />
-            <Line
-              type="monotone"
-              dataKey="upper"
-              stroke="#94a3b8"
-              strokeWidth={1}
-              dot={false}
-              name="Upper CI"
-            />
-          </ComposedChart>
+              <Area
+                type="monotone"
+                dataKey="ci"
+                stroke="none"
+                fill={`${scenarioMeta.color}66`}
+                name="95% CI"
+              />
+              {/* Keep your lines for clarity */}
+              <Line
+                type="monotone"
+                dataKey="lower"
+                stroke="#94a3b8"
+                strokeWidth={1}
+                dot={false}
+                name="Lower CI"
+              />
+              <Line
+                type="monotone"
+                dataKey="mean"
+                stroke={scenarioMeta.color}
+                strokeWidth={2.5}
+                dot={false}
+                name="Mean"
+              />
+              <Line
+                type="monotone"
+                dataKey="upper"
+                stroke="#94a3b8"
+                strokeWidth={1}
+                dot={false}
+                name="Upper CI"
+              />
+            </ComposedChart>
           )}
         </ResponsiveChartWrapper>
         <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
@@ -394,14 +394,14 @@ const Dashboard = () => {
     )
   }
 
-const renderDailyHospitalCardByAge = age => {
+  const renderDailyHospitalCardByAge = age => {
     const dynamicsDataForScenario = dynamicsData[selectedScenario]
     const scenarioMeta = scenarioConfig[selectedScenario]
-    
+
     if (!dynamicsDataForScenario || !dynamicsDataForScenario.length) {
       return null
     }
-    
+
     const dailySeries = buildDailyHospitalSeriesByAge(dynamicsDataForScenario, selectedDisease, age)
 
     if (!dailySeries.length) {
@@ -431,16 +431,16 @@ const renderDailyHospitalCardByAge = age => {
               }}
             />
             <YAxis
-              label={{ value: 'Hospitalizations', angle: -90, position: 'insideLeft', offset: -10 }}
+              label={{ value: 'Average Number of Individuals', angle: -90, position: 'insideLeft', offset: -10 }}
             />
             <Tooltip />
             <Legend />
             {/* UPDATED AREA COMPONENT */}
-            <Area 
-              type="monotone" 
-              dataKey="ci" 
-              stroke="none" 
-              fill={`${scenarioMeta.color}66`} 
+            <Area
+              type="monotone"
+              dataKey="ci"
+              stroke="none"
+              fill={`${scenarioMeta.color}66`}
               name="95% CI"
               legendType="none" // Optional: Hide from legend if you only want lines shown
             />
@@ -509,39 +509,39 @@ const renderDailyHospitalCardByAge = age => {
         </h3>
         <ResponsiveChartWrapper height={300} baseInterval={20}>
           {(ticks) => (
-          <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="day"
-              type="number"
-              scale="linear"
-              domain={[0, 240]}
-              ticks={dayTicks20}
-              allowDecimals={false}
-              label={{
-                value: 'Day',
-                position: 'insideBottomRight',
-                offset: -5,
-                textAnchor: 'end'
-              }}
-            />
-            <Tooltip />
-            <Legend />
-            {linesToRender.map(lineKey => {
-              const meta = scenarioConfig[lineKey]
-              return (
-                <Line
-                  key={`${age}-${lineKey}`}
-                  type="monotone"
-                  dataKey={lineKey}
-                  stroke={meta.color}
-                  strokeWidth={2}
-                  dot={false}
-                  name={meta.shortLabel}
-                />
-              )
-            })}
-          </LineChart>
+            <LineChart data={chartData} margin={{ top: 5, right: 30, left: 5, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="day"
+                type="number"
+                scale="linear"
+                domain={[0, 240]}
+                ticks={dayTicks20}
+                allowDecimals={false}
+                label={{
+                  value: 'Day',
+                  position: 'insideBottomRight',
+                  offset: -5,
+                  textAnchor: 'end'
+                }}
+              />
+              <Tooltip />
+              <Legend />
+              {linesToRender.map(lineKey => {
+                const meta = scenarioConfig[lineKey]
+                return (
+                  <Line
+                    key={`${age}-${lineKey}`}
+                    type="monotone"
+                    dataKey={lineKey}
+                    stroke={meta.color}
+                    strokeWidth={2}
+                    dot={false}
+                    name={meta.shortLabel}
+                  />
+                )
+              })}
+            </LineChart>
           )}
         </ResponsiveChartWrapper>
         <div style={{ textAlign: 'right', marginTop: '-2px', paddingRight: '30px' }}>
@@ -575,7 +575,7 @@ const renderDailyHospitalCardByAge = age => {
             width="18" height="18" viewBox="0 0 18 18" fill="none"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M4.5 6.75L9 11.25L13.5 6.75" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
 
@@ -583,10 +583,49 @@ const renderDailyHospitalCardByAge = age => {
           <div className="overview-body">
             <div className="overview-intro">
               <p>
-                This dashboard presents results from a <strong>compartmental disease model</strong> simulating the spread of
-                COVID-19, Influenza, and RSV within a school community over a <strong>240-day school year</strong>.
-                The model tracks how infections move through five age groups, and lets you explore how different
-                mitigation strategies change outbreak trajectories.
+                This dashboard presents results from an <strong>agent-based model</strong> simulating the spread of
+                COVID-19, influenza, and RSV over a 240-day period within a hypothetical community in Ontario, Canada.
+              </p>
+              <br></br>
+              <p>
+                Individuals in this model are classified according to their age group (see Population Groups below) and disease status.
+                Disease status can be one of the following: susceptible (uninfected but able to be infected), exposed (infected but
+                not yet able to spread the infection to others), presymptomatic (infected and able to infect others, but not yet
+                displaying symptoms), asymptomatic (infected and able to spread the infection to others, mild disease case that does
+                not present with symptoms), symptomatic (infected and able to spread the infection to others, moderate disease case
+                that presents with symptoms), hospitalized (infected and able to spread the infection to others, severe disease case
+                requiring hospitalization), recovered (no longer infected, unable to be infected again).
+              </p>
+              <br></br>
+              <p>
+                The community consists of multiple households and one school. Individuals are assigned to households based on
+                Ontario census data on average household sizes and compositions. Children are randomly assigned to classrooms in
+                the school and adults from the community are assigned to be teachers. Each individual goes through a daily routine
+                where they are able to make contacts with other individuals and potentially contract or spread a disease. These
+                contacts occur in one of three locations: the individual's household, school classrooms and common areas (weekdays only,
+                this only applies to individuals who attend or work at the school), and the larger community (e.g., grocery stores,
+                restaurants, sports venues). Each individual is assigned contact rates that determine the average number of daily
+                contacts they make with individuals of each age group in each of these locations. When a contact occurs between two
+                individuals, there is a probability that a disease may be spread if one of the individuals is infectious and the other
+                is susceptible. Individuals who are infected and showing symptoms or who test positive for a disease are required to
+                quarantine for a fixed length of time instead of following their daily routine, but there is a daily probability that
+                the individual will break their quarantine.
+              </p>
+              <br></br>
+              <p>
+                If a vaccine is available for a particular disease, a fraction of individuals are randomly selected to be
+                vaccinated at the start of the simulation. No additional vaccination occurs during the simulation and vaccine
+                effectiveness is assumed not to wane. If a susceptible individual is vaccinated and makes contact with an
+                infectious individual, there is a reduction in the likelihood of the susceptible individual contracting the disease
+                based on the efficacy of the vaccine.
+              </p>
+              <br></br>
+              <p>
+                <strong>Important:</strong> While this model has been connected with real data in an attempt to make the hypothetical
+                community in the model realistic, all results presented are inherently tied to the various assumptions made in
+                the model construction. The values and figures below are presented for educational purposes only; caution should be
+                used in any attempts to use these results for policy planning. In particular, numerical values should be
+                regarded in a relative sense and should not be over-interpreted.
               </p>
             </div>
 
@@ -594,11 +633,11 @@ const renderDailyHospitalCardByAge = age => {
               <div className="overview-card">
                 <h3>Population Groups</h3>
                 <ul>
-                  <li><span className="age-dot" style={{background:'#ef4444'}}></span><strong>Infants</strong> — age 0–2</li>
-                  <li><span className="age-dot" style={{background:'#f59e0b'}}></span><strong>Preschool</strong> — age 3–5</li>
-                  <li><span className="age-dot" style={{background:'#10b981'}}></span><strong>Children</strong> — age 6–17 (school students)</li>
-                  <li><span className="age-dot" style={{background:'#3b82f6'}}></span><strong>Adults</strong> — age 18–64 (general population, including teachers &amp; staff)</li>
-                  <li><span className="age-dot" style={{background:'#8b5cf6'}}></span><strong>Older Adults</strong> — age 65+</li>
+                  <li><span className="age-dot" style={{ background: '#ef4444' }}></span><strong>Infants</strong> — age 0–2</li>
+                  <li><span className="age-dot" style={{ background: '#f59e0b' }}></span><strong>Preschool</strong> — age 3–5</li>
+                  <li><span className="age-dot" style={{ background: '#10b981' }}></span><strong>Children</strong> — age 6–17</li>
+                  <li><span className="age-dot" style={{ background: '#3b82f6' }}></span><strong>Adults</strong> — age 18–64</li>
+                  <li><span className="age-dot" style={{ background: '#8b5cf6' }}></span><strong>Older Adults</strong> — age 65+</li>
                 </ul>
               </div>
 
@@ -606,21 +645,19 @@ const renderDailyHospitalCardByAge = age => {
                 <h3>Intervention Parameters</h3>
                 <ul>
                   <li>
-                    <strong>Student–Student Contact Reduction</strong> — reduces how frequently students interact with each other
+                    <strong>Student–Student Contact Reduction</strong> reduces how frequently students interact with each other
                     (e.g., through staggered schedules, smaller cohorts, or physical distancing).
-                    <em> None = no change; Low = ~30% fewer contacts; Medium = ~60%; High = ~90%.</em>
+                    <em> None = baseline contact rate; Low = 30% reduction; Medium = 60% reduction; High = 90% reduction.</em>
                   </li>
                   <li>
-                    <strong>COVID-19 Testing Coverage</strong> — the percentage of students tested for SARS-CoV-2 each day,
-                    enabling earlier isolation of infectious individuals.
-                    <em> Low = 1%; Medium = 5%; High = 10% daily.</em>
+                    <strong>COVID-19 Testing Coverage</strong> the percentage of students tested for COVID-19 each day.
+                    <em> Low = 1%; Medium = 5%; High = 10%.</em>
                   </li>
                   <li>
-                    <strong>Influenza Testing Coverage</strong> — same concept applied to influenza surveillance.
-                    <em> Low = 1%; Medium = 5%; High = 10% daily.</em>
+                    <strong>Influenza Testing Coverage</strong> the percentage of students tested for influenza each day.
+                    <em> Low = 1%; Medium = 5%; High = 10%.</em>
                   </li>
                 </ul>
-                <p className="overview-hint">Click the <strong>ⓘ</strong> icon next to each parameter for full details.</p>
               </div>
             </div>
           </div>
@@ -669,9 +706,9 @@ const renderDailyHospitalCardByAge = age => {
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor" />
                         </svg>
                         <span className="info-tooltip">{def.description} (Click for more details)</span>
                       </a>
@@ -685,9 +722,9 @@ const renderDailyHospitalCardByAge = age => {
                           fill="none"
                           xmlns="http://www.w3.org/2000/svg"
                         >
-                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor"/>
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                          <path d="M8 5.5V4.5M8 11.5V7.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <circle cx="8" cy="5.5" r="0.5" fill="currentColor" />
                         </svg>
                         <span className="info-tooltip">{def.description}</span>
                       </span>
@@ -716,8 +753,8 @@ const renderDailyHospitalCardByAge = age => {
       <div className="disease-tabs">
         {[
           { id: 'covid', label: 'COVID-19' },
-          { id: 'flu',   label: 'Influenza' },
-          { id: 'rsv',   label: 'RSV' },
+          { id: 'flu', label: 'Influenza' },
+          { id: 'rsv', label: 'RSV' },
         ].map(d => (
           <button
             key={d.id}
@@ -745,7 +782,7 @@ const renderDailyHospitalCardByAge = age => {
 
         <section className="chart-section">
           <h2 className="section-title">Uncertainty Bands</h2>
-          <p className="section-subtitle">The solid line shows the average outcome across many simulated runs. The shaded band is the <strong>95% confidence interval</strong> — 95% of simulation runs fell within this range. A wider band means the outcome is more sensitive to random variation.</p>
+          <p className="section-subtitle">The solid line shows the average outcome across many simulated runs. The shaded band is the <strong>95% confidence interval</strong> — 95% of simulation runs fell within this range.</p>
           <div className="dashboard-grid">
             {availableScenarioKeys.map(renderUncertaintyCard)}
           </div>
@@ -843,14 +880,14 @@ const buildDailyHospitalSeriesByAge = (data, disease, age) => {
       const mean = row[`${disease}_new_hospitalizations_${age}_mean`] || 0
       const lower = row[`${disease}_new_hospitalizations_${age}_ci_lower`] || 0
       const upper = row[`${disease}_new_hospitalizations_${age}_ci_upper`] || 0
-      
+
       // Create the range array for CI
       const ci = [lower, upper]
-      
+
       return { day, mean, lower, upper, ci }
     })
     .sort((a, b) => a.day - b.day)
-  
+
   return dailyData
 }
 
